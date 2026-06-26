@@ -1,8 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,19 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Hackathon Template",
-  description: "Starter template with MongoDB, Google OAuth, Cloudinary, and SMTP wired up.",
+  title: "QueueStorm Triage",
+  description:
+    "QueueStorm Triage — financial complaint investigator for QueueStorm Saturday-afternoon surge. POST /api/analyze-ticket classifies, reconciles, and replies safely.",
 };
 
-export default async function RootLayout({ children }) {
-  const session = await getServerSession(authOptions);
+export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
-        <Providers session={session}>{children}</Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
