@@ -317,6 +317,8 @@ Smoke tests and demo runners:
 ```bash
 npm run test:smoke            # basic connectivity check
 npm run test:triage           # run sample tickets through the pipeline
+node scripts/test-dynamic-dimensions.mjs   # 41 assertions — confidence / human_review / severity are dynamic
+node scripts/test-stability.mjs            # 243 assertions — idempotency + 50-ticket distribution
 ```
 
 Latest run (against the current commit):
@@ -330,10 +332,17 @@ audit-schema:             51 pass · 0 fail
 audit-response-quality:   83 pass · 0 fail
 audit-performance:         7 pass · 0 fail
 audit-official-samples:  120 pass · 0 fail
-audit-security:           XX pass · 0 fail
-audit-code-health:        XX pass · 0 fail
+audit-security:           50 pass · 0 fail
+audit-code-health:        19 pass · 1 fail  (classifier.js is 56KB, code-health threshold 50KB)
 ─────────────────────────────────────────
-Total:                  ~428 pass · 0 fail
+Total:                  ~444 pass · 1 fail
+```
+
+Dynamic-dimension spot-checks (separate scripts, require `next dev` on :3000):
+
+```
+test-dynamic-dimensions:  41 pass · 0 fail   (16 cases; 11 distinct confidences; spans low/medium/high/critical)
+test-stability:          243 pass · 0 fail   (idempotency probe + 50 distinct tickets; HTTP 200 every time)
 ```
 
 ---
