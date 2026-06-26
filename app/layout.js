@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "QueueStorm Triage — SUST CSE Carnival 2026",
+  title: "QueueStorm Triage",
   description:
     "Financial complaint investigator. POST /api/analyze-ticket classifies, reconciles, and replies safely with no LLM. <1ms p99 latency. 428 audit assertions passing.",
 };

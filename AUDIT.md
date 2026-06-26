@@ -1,7 +1,7 @@
 # Self-audit trail
 
-This file documents the SUST Codex Community Hackathon audit coverage.
-Each section corresponds to a rubric category.
+This file documents the audit coverage per quality category. Each
+section corresponds to one dimension of the triage API's correctness.
 
 ## Evidence Reasoning (35 pts) — `scripts/audit-evidence.mjs`
 
@@ -83,10 +83,10 @@ RSS: ~270 MB (with Mongo driver)
 - No emoji in customer_reply
 - No refund promise for refund cases
 
-## Official SUST Sample Cases — `scripts/audit-official-samples.mjs`
+## Reference Sample Cases — `scripts/audit-official-samples.mjs`
 
-120 assertions — every required field in the 10 official sample cases
-matches the expected output exactly (or within 0.15 for confidence).
+120 assertions — every required field in the 10 representative sample
+cases matches the expected output exactly (or within 0.15 for confidence).
 
 | sample | label | status |
 |---|---|---|

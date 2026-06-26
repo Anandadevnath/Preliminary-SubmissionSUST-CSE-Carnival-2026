@@ -214,7 +214,7 @@ function Header() {
           QueueStorm Triage
         </h1>
         <span className="text-[11px] uppercase tracking-wider text-zinc-500">
-          SUST CSE Carnival 2026 · Preliminary
+          Financial-support ticket triage · Rules-based pipeline
         </span>
       </div>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-3xl">
@@ -252,7 +252,7 @@ function StatsStrip() {
   const total = Object.values(AUDIT_TOTALS).reduce((a, b) => a + b, 0);
   const stats = [
     { label: "Audit assertions", value: `${total} / ${total}`, hint: "all passing" },
-    { label: "SUST sample cases", value: "10 / 10", hint: "exact match" },
+    { label: "Sample cases", value: "10 / 10", hint: "exact match" },
     { label: "Median latency", value: "0.13 ms", hint: "p99 0.58 ms" },
     { label: "Throughput", value: "11 k req/s", hint: "single core" },
   ];
@@ -683,7 +683,7 @@ function MatchComparison({ got, expected }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab 3: Official samples — runs all 10 SUST sample cases with side-by-side
+// Tab 3: Reference samples — runs all 10 representative sample cases
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OFFICIAL_SAMPLES = [
@@ -793,10 +793,11 @@ function OfficialSamplesTab() {
       <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 className="font-medium">Official SUST sample cases</h2>
+            <h2 className="font-medium">Reference sample cases</h2>
             <p className="text-xs text-zinc-500 mt-1 max-w-2xl">
-              These are the 10 sample cases provided by the SUST Codex Community Hackathon
-              organizers. Click <strong>Run all 10</strong> to see the live API output for each.
+              These are 10 representative sample cases covering every case_type, edge case,
+              and Bangla input. Click <strong>Run all 10</strong> to see the live API output
+              for each.
             </p>
           </div>
           <button

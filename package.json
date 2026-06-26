@@ -1,6 +1,7 @@
 {
-  "name": "hackethon-temp",
-  "version": "0.1.0",
+  "name": "queue-storm-triage",
+  "version": "1.0.0",
+  "description": "Rules-based support-ticket triage API for financial-services queues. Classifies complaints, reconciles evidence, replies safely.",
   "private": true,
   "scripts": {
     "dev": "next dev",

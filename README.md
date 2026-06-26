@@ -1,9 +1,39 @@
-# QueueStorm Triage — SUST CSE Carnival 2026
+# QueueStorm Triage
 
-A rules-based support-ticket triage API that classifies customer complaints
-about financial transactions and routes them to the right team.
+A rules-based support-ticket triage API for financial-services support
+queues. QueueStorm Triage takes a customer complaint plus the customer's
+recent transaction history and produces a structured routing decision:
+which case type it falls into, how severe it is, which team should
+handle it, what to do next, and a safe customer-facing reply.
 
-Built for the **SUST Codex Community Hackathon — Preliminary Round**.
+The system is designed for **Saturday-afternoon surge traffic** — the
+kind of inbound spike that happens after a marketing campaign or a
+service incident, when human triage cannot keep up with queue depth.
+By giving every ticket a structured verdict the moment it lands,
+QueueStorm Triage lets the human team work the queue in priority order
+instead of reading every message from scratch.
+
+---
+
+## Why rules-based?
+
+The whole pipeline is keyword + heuristic matching plus a deterministic
+evidence reconciler. There is no LLM call, no embedding lookup, no
+external API in the request path. That choice is deliberate:
+
+| concern | LLM-based | rules-based |
+|---|---|---|
+| p99 latency | 500–3000 ms | **0.6 ms** |
+| throughput (single core) | 5–50 req/s | **~11 000 req/s** |
+| cost at 1 M req/day | $50–500 | **$0** |
+| offline / air-gapped | needs API key | **runs anywhere** |
+| deterministic output | probabilistic | **byte-for-byte reproducible** |
+| safety surface | prompt injection, jailbreaks | **regex-guarded, well-audited** |
+| Bangla support | model-dependent | **explicit keyword lists + transliteration** |
+
+For high-volume, safety-critical, customer-facing routing in a domain
+where the answer space is finite (8 case types), rules win on every
+operational dimension.
 
 ---
 
@@ -50,9 +80,9 @@ Case types recognized:
 # 1. Install
 npm install
 
-# 2. Configure
+# 2. Configure (optional — analyze works without it)
 cp .env.local.example .env.local
-# fill in MONGODB_URI (optional, persistence only)
+# fill in MONGODB_URI if you want every analyzed ticket persisted
 
 # 3. Run
 npm run dev
@@ -72,7 +102,9 @@ curl -X POST http://localhost:3000/api/analyze-ticket \
 ```
 
 The response is fully validated against the strict response schema
-defined in `lib/schemas.js`.
+defined in `lib/schemas.js`. Open `http://localhost:3000/` for an
+interactive demo with preset tickets, the 10 official sample cases,
+bulk runner, safety demos, and a schema viewer.
 
 ---
 
@@ -171,27 +203,29 @@ runs in **<1ms p99** on a warm Node process.
 ### `GET /api/health`
 
 ```json
-{ "status": "ok", "uptime_s": 1234, "ts": "..." }
+{ "status": "ok", "service": "queue-storm-triage", "ts": "..." }
 ```
 
 ---
 
 ## Auditing
 
-The repository ships with a self-audit test suite under `scripts/`:
+The repository ships with a self-audit test suite under `scripts/`.
+Each script exits 0 on full pass and non-zero on any failure.
 
 ```bash
-node scripts/audit-evidence.mjs         #  61 assertions — Evidence Reasoning
-node scripts/audit-safety.mjs           #  18 assertions — Safety
-node scripts/audit-safety2.mjs          #  14 assertions — Obfuscation
-node scripts/audit-safety3.mjs          #   5 assertions — Echo injection
-node scripts/audit-schema.mjs           #  51 assertions — Request/response schema
-node scripts/audit-response-quality.mjs #  83 assertions — Tone, specificity
-node scripts/audit-performance.mjs      #   7 assertions — Latency / throughput
-node scripts/audit-official-samples.mjs # 120 assertions — Official SUST samples
+npm run audit                  # run everything (428 assertions)
+npm run audit:evidence         #  61 — case_type + evidence reasoning
+npm run audit:safety           #  37 — credential/refund/3rd-party guards
+npm run audit:schema           #  51 — request/response shape & boundaries
+npm run audit:quality          #  83 — tone, length, specificity
+npm run audit:performance      #   7 — latency, throughput, memory
+npm run audit:samples          # 120 — 10 official sample cases (full match)
+npm run audit:security         #  50 — prompt injection, XSS, secret leak
+npm run audit:health           #  19 — file structure, no TODOs, no leaks
 ```
 
-Each script exits 0 on success. Latest run:
+Latest run:
 
 ```
 audit-evidence:           61 pass · 0 fail
@@ -202,8 +236,10 @@ audit-schema:             51 pass · 0 fail
 audit-response-quality:   83 pass · 0 fail
 audit-performance:         7 pass · 0 fail
 audit-official-samples:  120 pass · 0 fail
+audit-security:           50 pass · 0 fail
+audit-code-health:        19 pass · 0 fail
 ─────────────────────────────────────────
-Total:                   359 pass · 0 fail
+Total:                   428 pass · 0 fail
 ```
 
 ---
@@ -230,6 +266,11 @@ The classifier itself treats any complaint containing the phrase
 *"share my OTP / PIN / password / CVV"* as phishing regardless of other
 signals, and any ambiguity in evidence causes the response to ask for
 clarification rather than guess.
+
+The fallback strings used when a template trips a safety rule are
+self-validated at module load — if a future edit introduces a forbidden
+phrase, the process logs an error and replaces the fallback with an
+ultra-safe version.
 
 ---
 
@@ -265,6 +306,21 @@ Cold start in production is dominated by Next.js, not the classifier.
 
 ---
 
+## Interactive demo
+
+`npm run dev` and open `http://localhost:3000/`. The demo page has
+five tabs:
+
+- **Playground** — interactive JSON editor with real-time validation,
+  one-click presets, copy-as-cURL, latency sparkline.
+- **Official samples** — all 10 sample cases with one-click "Run all 10".
+- **Bulk runner** — fires all presets concurrently and shows throughput.
+- **Safety demos** — 6 pre-built scenarios with live invariant checks
+  ("does not request credentials", "does not promise refund", etc.).
+- **Schema** — full request/response schema viewer.
+
+---
+
 ## File layout
 
 ```
@@ -274,20 +330,22 @@ app/
       route.js        ← POST handler
     health/
       route.js        ← GET handler
-  page.jsx            ← interactive demo page
-  layout.jsx
+  page.js             ← interactive demo page (5 tabs)
+  layout.js
+  globals.css
 lib/
   analyze.js          ← orchestration (validate → classify → reply → safety)
-  classifier.js       ← pure rules-based classifier (35pt core)
+  classifier.js       ← pure rules-based classifier
   replies.js          ← per-case-type templates (en + bn)
   safety.js           ← post-filter on customer_reply / action
   schemas.js          ← zod request + response schemas
   taxonomy.js         ← canonical enums
-  store.js            ← MongoDB persistence (best-effort)
+  store.js            ← MongoDB persistence (best-effort, optional)
   mongo-client.js     ← cached MongoClient
-  auth.js             ← (optional) NextAuth wiring
+  dns-fix.js          ← Windows SRV-record workaround
 scripts/
   audit-*.mjs         ← self-audit test suite (see "Auditing" above)
+AUDIT.md              ← per-category audit trail
 ```
 
 ---
@@ -299,12 +357,10 @@ MONGODB_URI=...              # optional — without it, analyze still works
 MONGODB_AUTH_SOURCE=admin    # optional, default "admin"
 ```
 
-All other config is hard-coded by design — the rubric values "deploys
-without external API keys".
+All other config is hard-coded by design.
 
 ---
 
 ## License
 
-Built for the SUST CSE Carnival 2026 hackathon. MIT license for the
-submission code.
+MIT.
