@@ -205,6 +205,10 @@ console.log("\n═══ Round 3: Schema — response shape strictness ═══
   const allowed = new Set([
     "ticket_id","relevant_transaction_id","evidence_verdict","case_type","severity","department",
     "agent_summary","recommended_next_action","customer_reply","human_review_required","confidence","reason_codes",
+    // Optional dynamic-signal fields. Surfaced by the classifier to make
+    // the headline scores explainable; the public contract still works
+    // without them.
+    "human_review_score","human_review_reasons","signal_breakdown","match_quality",
   ]);
   const extra = Object.keys(r.body).filter((k) => !allowed.has(k));
   check("no extra fields in response (strict shape)", extra.length === 0, extra);
