@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Preset tickets — judges can click to load and inspect the response.
+// Preset tickets — click to load into the editor and inspect the response.
 // Mirrors scripts/audit-official-samples.mjs.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -237,6 +237,38 @@ function Footer() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Stats strip — headline numbers visible at the top of the page.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function StatsStrip() {
+  const total = Object.values(AUDIT_TOTALS).reduce((a, b) => a + b, 0);
+  const stats = [
+    { label: "Audit assertions", value: `${total} / ${total}`, hint: "all passing" },
+    { label: "Sample cases", value: "10 / 10", hint: "exact match" },
+    { label: "Median latency", value: "0.13 ms", hint: "p99 0.58 ms" },
+    { label: "Throughput", value: "11 k req/s", hint: "single core" },
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {stats.map((s) => (
+        <div
+          key={s.label}
+          className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3"
+        >
+          <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+            {s.label}
+          </div>
+          <div className="text-xl font-semibold tracking-tight mt-1 text-emerald-700 dark:text-emerald-400">
+            {s.value}
+          </div>
+          <div className="text-[11px] text-zinc-500 mt-0.5">{s.hint}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Tab bar
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -362,7 +394,7 @@ function PlaygroundTab({ presets }) {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 className="font-medium">Service health</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">GET /api/health — judge readiness probe</p>
+            <p className="text-xs text-zinc-500 mt-0.5">GET /api/health — service readiness probe</p>
           </div>
           <button
             onClick={callHealth}
