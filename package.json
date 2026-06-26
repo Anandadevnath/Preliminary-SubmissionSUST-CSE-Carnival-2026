@@ -1,0 +1,32 @@
+{
+  "name": "hackethon-temp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test:smoke": "node scripts/test-connections.mjs"
+  },
+  "dependencies": {
+    "@auth/mongodb-adapter": "^3.11.2",
+    "cloudinary": "^2.10.0",
+    "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
+    "mongodb": "^6.21.0",
+    "mongoose": "^9.7.2",
+    "next": "16.2.9",
+    "next-auth": "^4.24.14",
+    "nodemailer": "^7.0.13",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4"
+  }
+}
