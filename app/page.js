@@ -193,6 +193,7 @@ export default function HomePage() {
       {tab === "bulk" && <BulkRunnerTab presets={PRESETS} />}
       {tab === "safety" && <SafetyDemosTab />}
       {tab === "schema" && <SchemaTab />}
+      {tab === "endpoint" && <EndpointTab presets={PRESETS} />}
       <Footer />
     </main>
   );
@@ -245,6 +246,7 @@ const TABS = [
   { id: "bulk", label: "Bulk runner" },
   { id: "safety", label: "Safety demos" },
   { id: "schema", label: "Schema" },
+  { id: "endpoint", label: "Endpoint" },
 ];
 
 function TabBar({ tab, setTab }) {
@@ -1143,6 +1145,185 @@ function SchemaSection({ title, doc }) {
         </tbody>
       </table>
     </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab: Endpoint — auto-generated API reference (method, path, request/response shape, curl)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ENDPOINT_META = {
+  method: "POST",
+  path: "/api/analyze-ticket",
+  runtime: "nodejs",
+  dynamic: "force-dynamic",
+  // Pulled from app/api/analyze-ticket/route.js — single source of truth.
+  summary:
+    "Classifies a financial complaint, reconciles it against transaction history, " +
+    "and returns a structured routing + reply payload with safety guarantees.",
+  semantics: [
+    "Pure rules-based pipeline — no LLM, no external API calls.",
+    "Latency budget: <1 ms p99 in the local audit harness.",
+    "Same code path as the test suite (lib/analyze.js) so behavior is identical in tests and at runtime.",
+    "Returns 400 on invalid JSON, 422 on schema/semantic violation, 405 on wrong method.",
+  ],
+  headers: [
+    { name: "Content-Type", required: true, value: "application/json" },
+    { name: "Accept", required: false, value: "application/json" },
+  ],
+};
+
+function EndpointTab({ presets }) {
+  const [presetIdx, setPresetIdx] = useState(0);
+  const preset = presets[presetIdx];
+  const origin = useMemo(() => {
+    if (typeof window !== "undefined") return window.location.origin;
+    return "https://<your-deployment>";
+  }, []);
+  const url = `${origin}${ENDPOINT_META.path}`;
+  const curl = useMemo(() => {
+    const payload = JSON.stringify(preset.body, null, 2);
+    return `curl -X ${ENDPOINT_META.method} '${url}' \\\n  -H 'Content-Type: application/json' \\\n  -d '${payload}'`;
+  }, [preset, url]);
+
+  return (
+    <div className="space-y-4">
+      {/* Endpoint summary */}
+      <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-md bg-emerald-600 text-white text-[11px] font-semibold uppercase tracking-wider px-2 py-1">
+            {ENDPOINT_META.method}
+          </span>
+          <code className="font-mono text-sm">{ENDPOINT_META.path}</code>
+          <span className="text-[11px] text-zinc-500">
+            runtime: {ENDPOINT_META.runtime} · dynamic: {ENDPOINT_META.dynamic}
+          </span>
+        </div>
+        <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+          {ENDPOINT_META.summary}
+        </p>
+        <ul className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1 list-disc pl-5">
+          {ENDPOINT_META.semantics.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+        <div className="grid sm:grid-cols-2 gap-3 pt-1">
+          <div className="rounded-md border border-zinc-200 dark:border-zinc-800 p-3 space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+              Required headers
+            </div>
+            {ENDPOINT_META.headers.map((h) => (
+              <div key={h.name} className="text-xs font-mono">
+                <span className="text-zinc-800 dark:text-zinc-200">{h.name}</span>
+                <span className="text-zinc-500">: {h.value}</span>
+                {!h.required && <span className="text-zinc-400"> (optional)</span>}
+              </div>
+            ))}
+          </div>
+          <div className="rounded-md border border-zinc-200 dark:border-zinc-800 p-3 space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold">
+              Status codes
+            </div>
+            <div className="text-xs font-mono">200 — success (analyzed)</div>
+            <div className="text-xs font-mono">400 — invalid JSON body</div>
+            <div className="text-xs font-mono">405 — wrong HTTP method</div>
+            <div className="text-xs font-mono">422 — schema / semantic violation</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Try-it: pick a preset, get a copy-pasteable curl */}
+      <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="font-medium">Try it</h2>
+          <select
+            value={presetIdx}
+            onChange={(e) => setPresetIdx(Number(e.target.value))}
+            className="text-xs rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1 font-mono"
+          >
+            {presets.map((p, i) => (
+              <option key={p.label + i} value={i}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <p className="text-xs text-zinc-500">
+          Auto-generated from the <code className="font-mono">PRESETS</code> list — the same
+          inputs the Playground tab sends.
+        </p>
+        <div className="flex items-center gap-2">
+          <CopyButton text={curl} />
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-emerald-700 dark:text-emerald-400 hover:underline"
+          >
+            Open {url} ↗
+          </a>
+        </div>
+        <pre className="rounded-md bg-zinc-950 text-zinc-100 text-[11px] leading-relaxed p-3 overflow-x-auto whitespace-pre">
+{curl}
+        </pre>
+      </section>
+
+      {/* What comes back */}
+      <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 space-y-3">
+        <h2 className="font-medium">What it returns</h2>
+        <p className="text-xs text-zinc-500">
+          See the <strong>Schema</strong> tab for the full field-by-field reference. At a glance,
+          a successful response includes:
+        </p>
+        <ul className="text-xs text-zinc-700 dark:text-zinc-300 space-y-1 list-disc pl-5">
+          <li><code className="font-mono">category</code> — routing bucket (e.g. wrong_transfer, payment_failed).</li>
+          <li><code className="font-mono">priority</code> — P1/P2/P3 based on amount + urgency signals.</li>
+          <li><code className="font-mono">team</code> — owning queue (disputes, fraud_risk, merchant_operations, …).</li>
+          <li><code className="font-mono">reply</code> — pre-written, safety-filtered message for the customer.</li>
+          <li><code className="font-mono">reconciliation</code> — match between complaint and transaction history.</li>
+          <li><code className="font-mono">reason_codes</code> — audit trail (≤ 20 entries) used by the regression tests.</li>
+          <li><code className="font-mono">safety</code> — flags from the safety filter (PII redaction, prompt-injection blocks, etc.).</li>
+        </ul>
+      </section>
+
+      {/* Source pointer */}
+      <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5">
+        <h2 className="font-medium">Source</h2>
+        <p className="text-xs text-zinc-500 mt-1">
+          The handler is intentionally a thin wrapper — all real logic lives in
+          {" "}<code className="font-mono">lib/analyze.js</code> so the local test harness can
+          exercise the exact same code path without booting Next.js.
+        </p>
+        <pre className="mt-3 rounded-md bg-zinc-950 text-zinc-100 text-[11px] leading-relaxed p-3 overflow-x-auto whitespace-pre">
+{`// app/api/analyze-ticket/route.js\nexport async function POST(req) {
+  const raw = await req.json();
+  const result = await analyzeTicket(raw);
+  return NextResponse.json(result.body, { status: result.status });
+}`}
+        </pre>
+      </section>
+    </div>
+  );
+}
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        } catch {
+          /* clipboard blocked — silently ignore */
+        }
+      }}
+      className="text-[11px] rounded-md border border-zinc-300 dark:border-zinc-700 px-2 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+    >
+      {copied ? "Copied" : "Copy"}
+    </button>
   );
 }
 
