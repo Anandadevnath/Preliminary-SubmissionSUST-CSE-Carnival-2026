@@ -8,7 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "test:smoke": "node scripts/test-connections.mjs",
-    "test:triage": "node scripts/run-sample-cases.mjs"
+    "test:triage": "node scripts/run-sample-cases.mjs",
+    "audit": "node scripts/audit-evidence.mjs && node scripts/audit-safety.mjs && node scripts/audit-safety2.mjs && node scripts/audit-safety3.mjs && node scripts/audit-schema.mjs && node scripts/audit-response-quality.mjs && node scripts/audit-performance.mjs && node scripts/audit-official-samples.mjs",
+    "audit:evidence": "node scripts/audit-evidence.mjs",
+    "audit:safety": "node scripts/audit-safety.mjs && node scripts/audit-safety2.mjs && node scripts/audit-safety3.mjs",
+    "audit:schema": "node scripts/audit-schema.mjs",
+    "audit:quality": "node scripts/audit-response-quality.mjs",
+    "audit:performance": "node scripts/audit-performance.mjs",
+    "audit:samples": "node scripts/audit-official-samples.mjs"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.2",
