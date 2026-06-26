@@ -5,7 +5,7 @@ Each section corresponds to a rubric category.
 
 ## Evidence Reasoning (35 pts) — `scripts/audit-evidence.mjs`
 
-61 assertions covering:
+77 assertions covering:
 
 - Status-based evidence reconciliation
   - payment_failed + completed → inconsistent
@@ -17,6 +17,11 @@ Each section corresponds to a rubric category.
   - "I was charged 1000" against 5000 → inconsistent
   - "5000 taka" against 5000 → consistent
   - "11am" false-positive guard
+  - **Dynamic amount extraction: claim 90,000 vs txn 80,000 → agent_summary
+    reflects the customer's 90,000 claim and flags "amount mismatch"**
+  - **Lakh-aware parsing: "1 lakh" parsed as 100,000 BDT and compared**
+  - **Bangla-digit parsing: "৯০০০০ টাকা" parsed as 90,000 BDT and compared**
+  - **Matching amounts (80,000 vs 80,000) → no mismatch note**
 - Bangla and Banglish complaints classified correctly
 - Common typos ("rond", "pyament", "vul", "wrng") detected
 - Empty history → no_transaction
@@ -110,7 +115,7 @@ npm run audit
 Or run any single suite:
 
 ```bash
-npm run audit:evidence      #  61 assertions
+npm run audit:evidence      #  77 assertions
 npm run audit:safety        #  37 assertions (3 files)
 npm run audit:schema        #  51 assertions
 npm run audit:quality       #  83 assertions

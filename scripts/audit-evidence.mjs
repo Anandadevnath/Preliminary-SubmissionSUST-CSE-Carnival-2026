@@ -355,6 +355,105 @@ await run("Wrong transfer with empty history",
   { status: 200, case_type: "wrong_transfer", verdict: "insufficient_data", txn: null }
 );
 
+// 26. Dynamic amount extraction — user claims 90000, txn is 80000.
+//     Previously the agent_summary hard-coded "80,000 BDT" regardless of
+//     what the customer said. Now it must reflect the customer's claim
+//     AND flag the mismatch.
+console.log("\n── dynamic amount extraction ──");
+{
+  const r = await analyzeTicket({
+    ticket_id: "EV-026",
+    complaint: "I sent 90000 taka to a wrong number by mistake",
+    transaction_history: [
+      { transaction_id: "TXN-26", timestamp: "2026-04-14T14:08:22Z", type: "transfer", amount: 80000, status: "completed" },
+    ],
+  });
+  check("EV-026: status 200", r.status === 200, r.status, 200);
+  check("EV-026: case_type=wrong_transfer", r.body?.case_type === "wrong_transfer", r.body?.case_type, "wrong_transfer");
+  check("EV-026: verdict=inconsistent (amount mismatch)", r.body?.evidence_verdict === "inconsistent", r.body?.evidence_verdict, "inconsistent");
+  check("EV-026: relevant_transaction_id matches", r.body?.relevant_transaction_id === "TXN-26", r.body?.relevant_transaction_id, "TXN-26");
+  check("EV-026: agent_summary mentions customer's 90,000 claim",
+    /90[, ]?000/.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+  check("EV-026: agent_summary mentions amount mismatch",
+    /amount\s*mismatch/i.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+  check("EV-026: customer_reply does NOT promise refund",
+    !/\bwe (?:will|shall|'ll|are going to) refund\b/i.test(r.body?.customer_reply || ""),
+    r.body?.customer_reply?.slice(0, 80));
+}
+
+// 27. Dynamic amount — user claims 10000, txn is 80000. Different claimed
+//     amount, same mismatch verdict, summary must reflect the new claim.
+{
+  const r = await analyzeTicket({
+    ticket_id: "EV-027",
+    complaint: "I sent 10000 taka to the wrong number by mistake",
+    transaction_history: [
+      { transaction_id: "TXN-27", timestamp: "2026-04-14T14:08:22Z", type: "transfer", amount: 80000, status: "completed" },
+    ],
+  });
+  check("EV-027: verdict=inconsistent", r.body?.evidence_verdict === "inconsistent", r.body?.evidence_verdict, "inconsistent");
+  check("EV-027: agent_summary mentions customer's 10,000 claim",
+    /10[, ]?000/.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+  check("EV-027: agent_summary mentions 80,000 from record",
+    /80[, ]?000/.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+}
+
+// 28. Lakh-style phrasing — "1 lakh" must be parsed as 100,000 BDT for
+//     evidence comparison. Without lakh-awareness, this slipped past the
+//     amount-mismatch check.
+{
+  const r = await analyzeTicket({
+    ticket_id: "EV-028",
+    complaint: "I sent 1 lakh taka to the wrong number",
+    transaction_history: [
+      { transaction_id: "TXN-28", timestamp: "2026-04-14T14:08:22Z", type: "transfer", amount: 80000, status: "completed" },
+    ],
+  });
+  check("EV-028: lakh claim detected as 100,000 → verdict=inconsistent",
+    r.body?.evidence_verdict === "inconsistent",
+    r.body?.evidence_verdict, "inconsistent");
+  check("EV-028: agent_summary mentions 100,000 claim",
+    /100[, ]?000/.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+}
+
+// 29. Bangla digit amount — "৯০০০০ টাকা" must be parsed as 90,000 BDT.
+{
+  const r = await analyzeTicket({
+    ticket_id: "EV-029",
+    complaint: "আমি ভুল করে ৯০০০০ টাকা পাঠিয়ে দিয়েছি",
+    language: "bn",
+    transaction_history: [
+      { transaction_id: "TXN-29", timestamp: "2026-04-14T14:08:22Z", type: "transfer", amount: 80000, status: "completed" },
+    ],
+  });
+  check("EV-029: Bangla ৯০০০০ claim detected → verdict=inconsistent",
+    r.body?.evidence_verdict === "inconsistent",
+    r.body?.evidence_verdict, "inconsistent");
+  check("EV-029: agent_summary mentions 90,000 claim",
+    /90[, ]?000/.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+}
+
+// 30. Matching amounts — no mismatch note, summary should be clean.
+{
+  const r = await analyzeTicket({
+    ticket_id: "EV-030",
+    complaint: "I sent 80000 taka to the wrong number",
+    transaction_history: [
+      { transaction_id: "TXN-30", timestamp: "2026-04-14T14:08:22Z", type: "transfer", amount: 80000, status: "completed" },
+    ],
+  });
+  check("EV-030: matching amounts → verdict=consistent", r.body?.evidence_verdict === "consistent", r.body?.evidence_verdict, "consistent");
+  check("EV-030: no mismatch note when amounts match",
+    !/amount\s*mismatch/i.test(r.body?.agent_summary || ""),
+    (r.body?.agent_summary || "").slice(0, 120));
+}
+
 console.log("\n═══ Round 1 Results ═══");
 console.log(`  ${pass} pass · ${fail} fail`);
 if (failures.length) {

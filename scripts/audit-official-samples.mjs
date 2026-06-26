@@ -10,7 +10,7 @@ import { readFile } from "node:fs/promises";
 
 const { analyzeTicket } = await import("../lib/analyze.js");
 
-const raw = await readFile("C:/Users/Arnob/Downloads/SUST_Preli_Sample_Cases.json", "utf8");
+const raw = await readFile(new URL("./SUST_Preli_Sample_Cases.json", import.meta.url), "utf8");
 const PACK = JSON.parse(raw);
 
 let pass = 0, fail = 0;
