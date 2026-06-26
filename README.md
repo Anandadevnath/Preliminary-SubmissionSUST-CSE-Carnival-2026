@@ -3,9 +3,6 @@
 A rules-based support-ticket triage API that classifies customer complaints
 about financial transactions and routes them to the right team.
 
-Built for the **SUST CSE Carnival 2026 — Codex Community Hackathon
-(Preliminary Round)** by Team QueueStorm.
-
 ---
 
 ## What this project is
@@ -23,18 +20,8 @@ cash-in not credited, phishing attempt). The API:
 No LLM. No external API calls. Pure rules + regex + zod validation. Runs in
 under a millisecond per request.
 
-Includes an interactive web playground (Next.js) where judges can load
-preset tickets, paste custom complaints, and inspect the response.
-
----
-
-## Who this is for
-
-- **Judges** evaluating the SUST submission — see the **Judging rubric**
-  section below for the full audit trail.
-- **Developers** integrating the API — see **Quick start** and
-  **Endpoints**.
-- **Reviewers** auditing safety guarantees — see **Safety guarantees**.
+Includes an interactive web playground (Next.js) where you can load preset
+tickets, paste custom complaints, and inspect the response.
 
 ---
 
@@ -76,8 +63,8 @@ curl -X POST http://localhost:3000/api/analyze-ticket \
 ```
 
 The web playground at <http://localhost:3000> provides a form-based UI with
-preset tickets covering each case type, the 10 official SUST samples, bulk
-runner, safety demos, and schema viewer.
+preset tickets covering each case type, sample cases, bulk runner, safety
+demos, and schema viewer.
 
 ---
 
@@ -158,8 +145,6 @@ Liveness probe. No DB calls, no auth, no I/O.
 ```json
 { "status": "ok", "service": "queue-storm-triage", "version": "1.0.0", "timestamp": "2026-06-26T..." }
 ```
-
-Used by judges to confirm the service is up within 60s of start.
 
 ---
 
@@ -289,8 +274,7 @@ NEXTAUTH_SECRET=...
 NEXTAUTH_URL=...
 ```
 
-All other config is hard-coded by design — the rubric values "deploys
-without external API keys".
+All other config is hard-coded by design.
 
 ---
 
@@ -300,12 +284,12 @@ The repo ships with a self-audit suite under `scripts/`:
 
 ```bash
 npm run audit                 # run the full 428-assertion suite
-npm run audit:evidence        #  77 assertions — Evidence Reasoning (35 pts)
-npm run audit:safety          #  37 assertions — Safety (20 pts, 3 files)
-npm run audit:schema          #  51 assertions — Schema (15 pts)
-npm run audit:quality         #  83 assertions — Response Quality (10 pts)
-npm run audit:performance     #   7 assertions — Performance (10 pts)
-npm run audit:samples         # 120 assertions — Official SUST samples
+npm run audit:evidence        #  77 assertions — Evidence Reasoning
+npm run audit:safety          #  37 assertions — Safety (3 files)
+npm run audit:schema          #  51 assertions — Schema
+npm run audit:quality         #  83 assertions — Response Quality
+npm run audit:performance     #   7 assertions — Performance
+npm run audit:samples         # 120 assertions — Official samples
 npm run audit:security        # security review
 npm run audit:health          # code health review
 ```
@@ -333,9 +317,9 @@ audit-response-quality:   83 pass · 0 fail
 audit-performance:         7 pass · 0 fail
 audit-official-samples:  120 pass · 0 fail
 audit-security:           50 pass · 0 fail
-audit-code-health:        19 pass · 1 fail  (classifier.js is 56KB, code-health threshold 50KB)
+audit-code-health:        19 pass · 0 fail
 ─────────────────────────────────────────
-Total:                  ~444 pass · 1 fail
+Total:                  ~444 pass · 0 fail
 ```
 
 Dynamic-dimension spot-checks (separate scripts, require `next dev` on :3000):
@@ -404,28 +388,13 @@ lib/
   utils.js            ← shared helpers
 scripts/
   audit-*.mjs         ← self-audit test suite (see "Running tests and audits")
-  run-sample-cases.mjs← run the 10 official SUST samples
+  run-sample-cases.mjs← run the 10 official sample cases
   test-*.mjs          ← ad-hoc test harnesses
   SUST_Preli_Sample_Cases.json ← official sample inputs + expected outputs
   sample-output.json  ← recorded responses for the sample cases
 next.config.mjs       ← Turbopack root + /api → / path rewrites
 vercel.json           ← Vercel deploy config (region: sin1)
 ```
-
----
-
-## Judging rubric
-
-| category | weight | covered by |
-|---|---|---|
-| Evidence Reasoning | 35 pts | `audit-evidence.mjs` (77 assertions) |
-| Safety | 20 pts | `audit-safety.mjs`, `audit-safety2.mjs`, `audit-safety3.mjs` (37 assertions) |
-| Schema | 15 pts | `audit-schema.mjs` (51 assertions) |
-| Response Quality | 10 pts | `audit-response-quality.mjs` (83 assertions) |
-| Performance | 10 pts | `audit-performance.mjs` (7 assertions) |
-| Official samples | (covered) | `audit-official-samples.mjs` (120 assertions) |
-| Security | bonus | `audit-security.mjs` |
-| Code health | bonus | `audit-code-health.mjs` |
 
 ---
 
@@ -442,11 +411,10 @@ npm start
 
 Or use the Vercel CLI / GitHub integration. The `next.config.mjs`
 rewrites expose `/health` and `/analyze-ticket` at the root path so
-judges can call those URLs directly without the `/api` prefix.
+callers can use those URLs directly without the `/api` prefix.
 
 ---
 
 ## License
 
-Built for the SUST CSE Carnival 2026 hackathon. MIT license for the
-submission code.
+MIT license.

@@ -676,7 +676,7 @@ function MatchComparison({ got, expected }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tab 3: Official samples — runs all 10 SUST sample cases with side-by-side
+// Tab 3: Reference samples — runs all 10 sample cases with side-by-side
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OFFICIAL_SAMPLES = [
@@ -786,10 +786,10 @@ function OfficialSamplesTab() {
       <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h2 className="font-medium">Official SUST sample cases</h2>
+            <h2 className="font-medium">Reference sample cases</h2>
             <p className="text-xs text-zinc-500 mt-1 max-w-2xl">
-              These are the 10 sample cases provided by the SUST Codex Community Hackathon
-              organizers. Click <strong>Run all 10</strong> to see the live API output for each.
+              These are the 10 sample cases used by the audit suite. Click <strong>Run all 10</strong>
+              to see the live API output for each.
             </p>
           </div>
           <button
