@@ -8,7 +8,7 @@
 }
 
 :root {
-  --background: #ffffff;
+  --background: #fafafa;
   --foreground: #171717;
   --radius: 0.5rem;
 }
@@ -32,4 +32,35 @@ textarea,
 button,
 select {
   font-family: inherit;
+}
+
+/* Custom scrollbar for the dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.3);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 120, 120, 0.5);
+}
+
+/* Subtle focus ring everywhere */
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgb(16 185 129 / 0.5);
+  outline-offset: 2px;
+}
+
+/* Tab character preservation in pre/code */
+pre,
+code {
+  tab-size: 2;
 }
